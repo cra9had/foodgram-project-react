@@ -3,6 +3,30 @@ from django.contrib.auth import get_user_model
 from ingredients.models import Ingredient
 User=get_user_model()
 
+class Tag(models.Model):
+
+    name = models.CharField(
+        max_length=250,
+        verbose_name='Название тэга',
+        help_text='Введите название тэга.'
+    )
+
+    hexcolour = models.CharField(
+        max_length=7,
+        default="#ffffff",
+        verbose_name='Цветовой HEX-код',
+        help_text='Выберете цвет тэга.'
+        )
+
+    slug = models.SlugField(
+        unique=True,
+        verbose_name='Slug',
+        help_text='Введите slug тэга.'
+        )
+    
+    def __str__(self):
+        return self.slug
+
 class Recipe(models.Model):
 
     author = models.ForeignKey(
@@ -42,7 +66,7 @@ class Recipe(models.Model):
     )
 
     tags = models.ManyToManyField(
-        tag,
+        Tag,
         on_delete=models.SET_NULL,
         related_name='recipes',
         verbose_name='Тэги',
@@ -56,3 +80,4 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
+
