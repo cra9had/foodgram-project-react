@@ -13,9 +13,17 @@ class Ingredient(models.Model):
         help_text='Введите количество ингредиента.'
     )
 
+    CHOICES = (
+        ('кг', 'Килограмм'),
+        ('г', 'грамм'),
+        ('л', 'литров'),
+        ('мл', 'ммилилитров'),
+        )
+
     unit = models.CharField(
-        max_length=250,
+        max_length=2,
         verbose_name='Единицы измерения',
-        help_text='Введите tдиницы измерения.'
+        help_text='Введите единицы измерения().',
+        choices = CHOICES
     )
     

@@ -20,3 +20,39 @@ class Follow(models.Model):
             models.UniqueConstraint(
                 fields=['user', 'author'], name='unique follow')
         ]
+
+
+class Favorite(models.Model):
+    """Модель подписки на рецепт."""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='fan')
+    recipe = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='favouriting')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'], name='unique favorite')
+        ]
+
+
+class Basket(models.Model):
+    """Модель добавления рецепта в корзину."""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='buyer')
+    recipe = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='buying')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'], name='unique basket')
+        ]
