@@ -105,14 +105,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         except Basket.DoesNotExist:
             return bad_request
 
-    @action(detail=False, permission_classes=[permissions.IsAuthenticated])
-    def download_basket(self, request):
-        ingredients_list = Basket.objects.filter(
-            recipe__buyer__user=request.user
-        )
-        list_to_buy = ing_count(ingredients_list)
-        return download_response(list_to_buy, 'Список_покупок.txt')
-
 
 class TagsViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TagSerializer
