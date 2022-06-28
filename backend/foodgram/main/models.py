@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from recipes.models import Recipe
 
 User=get_user_model()
 
@@ -29,7 +30,7 @@ class Favorite(models.Model):
         on_delete=models.CASCADE,
         related_name='fan')
     recipe = models.ForeignKey(
-        User,
+        Recipe,
         on_delete=models.CASCADE,
         related_name='favouriting')
 
@@ -47,7 +48,7 @@ class Basket(models.Model):
         on_delete=models.CASCADE,
         related_name='buyer')
     recipe = models.ForeignKey(
-        User,
+        Recipe,
         on_delete=models.CASCADE,
         related_name='buying')
 

@@ -38,4 +38,6 @@ def ing_count(recipe_list):
             ingredients_list = ''
         else:
             ingredients_list = ingredients_list + name + ' ' + (str(amount) + ' ' +  unit + '/n')
+    
+    return ingredients_list
 

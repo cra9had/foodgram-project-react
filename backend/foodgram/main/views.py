@@ -4,185 +4,152 @@ from django.core.cache import cache
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from backend.foodgram.ingredients.models import Ingredient
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework import viewsets, status, permissions
 from recipes.models import Recipe
+from ingredients.models import Ingredient
 from recipes.forms import RecipeForm
+from recipes.models import Tag
 from .models import Follow, Favorite, Basket
 from .ingredients_count import ing_count
+from .filters import RecipeFilter, IngredientFilter
+from api.permissions import AuthorAdminOrReadOnly
+from api.serializers import RecipeSerializer, ReadRecipeSerializer, FavoriteSerializer, BasketSerializer, IngredientSerializer, RecipeFollowSerializer, TagSerializer
+from .paginators import CustomPageNumberPagination
+
 
 User=get_user_model()
 
-
-def paginator_my(request, post_list):
-    paginator = Paginator(post_list, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    return page_obj
-
-
-def index(request):
-    recipe_list = Recipe.objects.all()
-    page_obj = paginator_my(request, recipe_list)
-    if len(request.GET) != 0:
-        cache.clear()
-    context = {
-        'page_obj': page_obj,
-    }
-    return render(request, 'recipes/index.html', context)
-
-
-def recipe_detail(request, recipe_id):
-    recipe = get_object_or_404(Recipe, id=recipe_id)
-    author = recipe.author
-    full_name = author.get_full_name()
-    recipe_count = author.recipe.all().count()
-    context = {
-        'recipe': recipe,
-        'author': author,
-        'full_name': full_name,
-        'recipe_count': recipe_count,
-    }
-    return render(request, 'recipe/recipe_detail.html', context)
-
-
-def profile(request, username):
-    author = get_object_or_404(User, username=username)
-    full_name = author.get_full_name()
-
-    recipe_list = author.posts.all()
-    recipe_count = recipe_list.count()
-    page_obj = paginator_my(request, recipe_list)
-    if request.user.is_authenticated:
-        following = Follow.objects.filter(
-            user=request.user, author=author
-        )
-    else:
-        following = False
-
-    context = {
-        'page_obj': page_obj,
-        'recipe_count': recipe_count,
-        'full_name': full_name,
-        'author': author,
-        'following': following,
-    }
-    return render(request, 'recipes/profile.html', context)
-
-
-@login_required
-def recipe_create(request):
-
-    form = RecipeForm(request.POST or None, files=request.FILES or None)
-    context = {
-        'form': form,
-    }
-    if form.is_valid() and request.method == 'POST':
-        form_obj = form.save(commit=False)
-        form_obj.author = request.user
-        form_obj.save()
-        return redirect('recipes:profile', username=request.user)
-    else:
-        return render(request, 'recipes/create_post.html', context)
-
-
-def recipe_edit(request, recipe_id):
-    recipe = get_object_or_404(Recipe, pk=recipe_id)
-    if recipe.author != request.user:
-        return redirect('recipes:recipe_detail', recipe_id=recipe_id)
-
-    form = RecipeForm(
-        request.POST or None,
-        files=request.FILES or None,
-        instance=recipe
+@api_view(['GET', ])
+@permission_classes([permissions.IsAuthenticated])
+def download_basket(request):
+    user = request.user
+    basket = user.buyer.all()
+    txt_file_output = ing_count(basket)
+    response = HttpResponse(txt_file_output, 'Content-Type: text/plain')
+    response['Content-Disposition'] = (
+        'attachment;' 'filename="Список_покупок.txt"'
     )
-    if form.is_valid():
-        form.save()
-        return redirect('recipes:recipe_detail', recipe_id=recipe_id)
-    context = {
-        'recipe': recipe,
-        'form': form,
-        'is_edit': True,
-    }
-    return render(request, 'recipes/create_recipe.html', context)
+    return response
+
+class RecipeViewSet(viewsets.ModelViewSet):
+    queryset = Recipe.objects.all().order_by('-id')
+    permission_classes = [AuthorAdminOrReadOnly]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RecipeFilter
+    pagination_class = CustomPageNumberPagination
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ReadRecipeSerializer
+        return RecipeSerializer
+
+    @action(detail=True, permission_classes=[AuthorAdminOrReadOnly])
+    def favorite(self, request, pk):
+        data = {'user': request.user.id, 'recipe': pk}
+        serializer = FavoriteSerializer(
+            data=data,
+            context={'request': request},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @favorite.mapping.delete
+    def delete_favorite(self, request, pk):
+        if request.user.is_anonymous:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        recipe = get_object_or_404(Recipe, id=pk)
+        try:
+            Favorite.objects.get(user=request.user, recipe=recipe).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Favorite.DoesNotExist:
+            return Response(
+                'Рецепт уже отсутствует в избранном.',
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    @action(detail=True, permission_classes=[AuthorAdminOrReadOnly])
+    def basket(self, request, pk):
+        data = {'user': request.user.id, 'recipe': pk}
+        serializer = BasketSerializer(
+            data=data,
+            context={'request': request},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @basket.mapping.delete
+    def delete_basket(self, request, pk):
+        if request.user.is_anonymous:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        bad_request = Response(
+            'Рецепт уже отсутствует в списке покупок.',
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+        try:
+            try:
+                recipe = Recipe.objects.get(id=pk)
+            except Recipe.DoesNotExist:
+                return bad_request
+            shopping_list = Basket.objects.get(
+                user=request.user,
+                recipe=recipe,
+            )
+            shopping_list.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Basket.DoesNotExist:
+            return bad_request
+
+    @action(detail=False, permission_classes=[permissions.IsAuthenticated])
+    def download_basket(self, request):
+        ingredients_list = Basket.objects.filter(
+            recipe__buyer__user=request.user
+        )
+        list_to_buy = ing_count(ingredients_list)
+        return download_response(list_to_buy, 'Список_покупок.txt')
 
 
-@login_required
-def follow_index(request):
-    recipe_list = Recipe.objects.filter(author__following__user=request.user)
-    page_obj = paginator_my(request, recipe_list)
-    context = {
-        'page_obj': page_obj,
-    }
-    return render(request, 'recipes/follow.html', context)
+class TagsViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = TagSerializer
+    queryset = Tag.objects.all()
+    permission_classes = (permissions.AllowAny,)
+    pagination_class = None
 
 
-@login_required
-def profile_follow(request, username):
-    author = get_object_or_404(User, username=username)
-    if request.user != author:
-        Follow.objects.get_or_create(user=request.user, author=author)
-    return redirect('recipes:profile', username)
+class IngredientViewSet(viewsets.ModelViewSet):
+    serializer_class = IngredientSerializer
+    queryset = Ingredient.objects.all()
+    permission_classes = (permissions.AllowAny, )
+    pagination_class = None
+    filterset_class = IngredientFilter
 
 
-@login_required
-def profile_unfollow(request, username):
-    author = get_object_or_404(User, username=username)
-    if request.user != author:
-        Follow.objects.filter(user=request.user, author=author).delete()
-    return redirect('recipes:profile', username)
+class BasketView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    http_method_names = ['get', 'delete']
 
+    def get(self, request, recipe_id):
+        user = request.user
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        serializer = BasketSerializer(
+            data={'user': user.id, 'recipe': recipe.id},
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save(recipe=recipe, user=request.user)
+        serializer = RecipeFollowSerializer(recipe)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-@login_required
-def favorite_index(request):
-    recipe_list = Recipe.objects.filter(author__favouriting__user=request.user)
-    page_obj = paginator_my(request, recipe_list)
-    context = {
-        'page_obj': page_obj,
-    }
-    return render(request, 'recipes/favorite.html', context)
-
-
-@login_required
-def profile_favorite(request, recipe_id):
-    recipe = get_object_or_404(Recipe, id=recipe_id)
-    Favorite.objects.get_or_create(user=request.user, recipe=recipe)
-    return redirect('recipes:favorite_index')
-
-
-@login_required
-def profile_unfavorite(request, recipe_id):
-    recipe = get_object_or_404(Recipe, id=recipe_id)
-    Favorite.objects.filter(user=request.user, recipe=recipe).delete()
-    return redirect('recipes:favorite_index')
-
-# todo Список покупок
-@login_required
-def basket_index(request):
-    recipe_list = Recipe.objects.filter(author__buying__user=request.user)
-    ingredients_str = ing_count(recipe_list)
-
-    return HttpResponse(ingredients_str, content_type='text/plain')
-
-
-@login_required
-def basket_add(request, recipe_id):
-    recipe = get_object_or_404(Recipe, id=recipe_id)
-    Basket.objects.get_or_create(user=request.user, recipe=recipe)
-    return redirect('recipes:basket_index')
-
-
-@login_required
-def basket_del(request, recipe_id):
-    recipe = get_object_or_404(Recipe, id=recipe_id)
-    Basket.objects.filter(user=request.user, recipe=recipe).delete()
-    return redirect('recipes:basket_index')
-
-
-def tag_search(request, tags):
-
-    recipe_list = Recipe.objects.filter(tags__in=tags)
-    page_obj = paginator_my(request, recipe_list)
-    context = {
-        'page_obj': page_obj,
-    }
-    return render(request, 'recipes/tag_search.html', context)
+    def delete(self, request, recipe_id):
+        user = request.user
+        basket = get_object_or_404(Basket, user=user, recipe__id=recipe_id)
+        basket.delete()
+        return Response(
+            f'Рецепт {basket.recipe} удален из корзины у пользователя {user}, '
+            f'status=status.HTTP_204_NO_CONTENT'
+        )
