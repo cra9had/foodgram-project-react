@@ -1,22 +1,19 @@
-from email.headerregistry import UniqueAddressHeader
-from wsgiref.validate import validator
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from ingredients.models import Ingredient
 from main.models import Basket, Favorite, Follow
 from recipes.models import Recipe, Tag
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
 
-User=get_user_model()
+User = get_user_model()
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'email', 'id')
+
 
 class FavoriteSerializer(serializers.ModelSerializer):
     user = serializers.IntegerField(source='user.id')
@@ -129,7 +126,6 @@ class BasketSerializer(serializers.ModelSerializer):
         return validated_data
 
 
-
 class IngredientSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField()
     unit = serializers.ReadOnlyField()
@@ -149,6 +145,7 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
         model = Ingredient
         fields = ('id', 'name', 'amount', 'unit')
 
+
 class IngredientAmountCreate(IngredientAmountSerializer):
     id = serializers.IntegerField(write_only=True)
     amount = serializers.IntegerField(write_only=True)
@@ -166,7 +163,6 @@ class IngredientAmountCreate(IngredientAmountSerializer):
             Ingredient.objects.filter(ingredient=instance)
         ]
         return IngredientAmountSerializer(ingredient_in_recipe).data
-
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -209,8 +205,8 @@ class RecipeSerializer(serializers.ModelSerializer):
             ingredient_instance = get_object_or_404(Ingredient,
                                                     pk=ingredient.get('id'))
             Ingredient.objects.create(recipe=recipe,
-                                               ingredient=ingredient_instance,
-                                               amount=amount)
+                                      ingredient=ingredient_instance,
+                                      amount=amount)
         recipe.save()
         return recipe
 
@@ -230,8 +226,8 @@ class RecipeSerializer(serializers.ModelSerializer):
             ).exists():
                 ingredients_instance.remove(
                     Ingredient.objects.get(id=ingredient_id,
-                                                    amount=amount
-                                                    ).ingredient)
+                                           amount=amount
+                                           ).ingredient)
             else:
                 Ingredient.objects.get_or_create(
                     recipe=instance,
@@ -244,6 +240,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         instance.tags.set(tags_data)
         return instance
 
+
 class ReadRecipeSerializer(RecipeSerializer):
     tags = TagSerializer(read_only=True, many=True)
     author = UserSerializer(read_only=True)
@@ -252,11 +249,3 @@ class ReadRecipeSerializer(RecipeSerializer):
     def get_ingredients(self, obj):
         ingredients = Ingredient.objects.filter(recipe=obj)
         return IngredientAmountSerializer(ingredients, many=True).data
-
-
-class RecipeFollowSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Recipe
-        fields = ["id", "name", "image", "cooking_time"]
-
-

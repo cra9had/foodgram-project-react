@@ -1,7 +1,7 @@
 
 def ing_count(recipe_list):
 
-    ingredients_for_buy = [[0 for x in range(10000)] for y in range(3)] 
+    ingredients_for_buy = [[0 for x in range(10000)] for y in range(3)]
     for recipe in recipe_list:
         for ingredient in recipe.ingredients:
             cur_elmn_idx = ingredients_for_buy[0].index(ingredient.name)
@@ -22,22 +22,21 @@ def ing_count(recipe_list):
                         ingredients_for_buy[1][idx] = amount_add
                         ingredients_for_buy[2][idx] = ingredient.unit
 
-    
     for idx, ingredient in enumerate(ingredients_for_buy[0]):
         name = ingredients_for_buy[0][idx]
         amount = ingredients_for_buy[1][idx]
         unit = ingredients_for_buy[2][idx]
-        if amount >= 1000 and  unit == 'г':
+        if amount >= 1000 and unit == 'г':
             unit = 'кг'
-            amount = round(amount/1000,2)
-        if amount >= 1000 and  unit == 'мл':
+            amount = round(amount/1000, 2)
+        if amount >= 1000 and unit == 'мл':
             unit = 'л'
-            amount = round(amount/1000,2)
+            amount = round(amount/1000, 2)
 
         if idx == 0:
             ingredients_list = ''
         else:
-            ingredients_list = ingredients_list + name + ' ' + (str(amount) + ' ' +  unit + '/n')
-    
-    return ingredients_list
+            ingredients_list = (ingredients_list + name + ' '
+                                + (str(amount) + ' ' + unit + '/n'))
 
+    return ingredients_list
