@@ -2,6 +2,7 @@ version: '3.3'
 
 volumes:
   postgres_data:
+  static-data:
   static_value:
   media_value:
   frontend_data:
