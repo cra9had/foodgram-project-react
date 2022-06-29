@@ -2,7 +2,8 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from ingredients.models import Ingredient
 
-User=get_user_model()
+User = get_user_model()
+
 
 class Tag(models.Model):
 
@@ -24,9 +25,10 @@ class Tag(models.Model):
         verbose_name='Slug',
         help_text='Введите slug тэга.'
         )
-    
+
     def __str__(self):
         return self.slug
+
 
 class Recipe(models.Model):
 
@@ -81,4 +83,3 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
-

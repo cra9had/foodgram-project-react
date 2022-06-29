@@ -25,6 +25,5 @@ class Ingredient(models.Model):
         max_length=2,
         verbose_name='Единицы измерения',
         help_text='Введите единицы измерения().',
-        choices = CHOICES
+        choices=CHOICES
     )
-    
