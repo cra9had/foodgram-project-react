@@ -1,6 +1,7 @@
-from rest_framework import filters
-from recipes.models import Recipe
 from ingredients.models import Ingredient
+from recipes.models import Recipe
+from rest_framework import filters
+
 
 class RecipeFilter(filters.FilterSet):
     tags = filters.AllValuesMultipleFilter(field_name='tags__slug')
