@@ -1,8 +1,5 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.core.paginator import Paginator
-from django.core.cache import cache
+from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
@@ -11,17 +8,20 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework import viewsets, status, permissions
 from recipes.models import Recipe
 from ingredients.models import Ingredient
-from recipes.forms import RecipeForm
 from recipes.models import Tag
-from .models import Follow, Favorite, Basket
+from .models import Favorite, Basket
 from .ingredients_count import ing_count
 from .filters import RecipeFilter, IngredientFilter
 from api.permissions import AuthorAdminOrReadOnly
-from api.serializers import RecipeSerializer, ReadRecipeSerializer, FavoriteSerializer, BasketSerializer, IngredientSerializer, RecipeFollowSerializer, TagSerializer
+from api.serializers import (RecipeSerializer, ReadRecipeSerializer,
+                             FavoriteSerializer, BasketSerializer,
+                             IngredientSerializer, RecipeFollowSerializer,
+                             TagSerializer)
 from .paginators import CustomPageNumberPagination
 
 
-User=get_user_model()
+User = get_user_model()
+
 
 @api_view(['GET', ])
 @permission_classes([permissions.IsAuthenticated])
@@ -34,6 +34,7 @@ def download_basket(request):
         'attachment;' 'filename="Список_покупок.txt"'
     )
     return response
+
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all().order_by('-id')

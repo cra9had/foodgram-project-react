@@ -2,7 +2,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from main.views import (IngredientViewSet, RecipeViewSet, BasketView,
-                    TagsViewSet, download_basket)
+                        TagsViewSet, download_basket)
 
 router = DefaultRouter()
 router.register('tags', TagsViewSet, basename='tags')
