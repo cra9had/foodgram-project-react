@@ -11,5 +11,4 @@ class RecipeAdmin(admin.ModelAdmin):
     readonly_fields = ('fan_count',)
 
     def fan_count(self, obj):
-        count = Favorite.objects.filter(recipe=obj).count()
-        return count
+        return Favorite.objects.filter(recipe=obj).count()
