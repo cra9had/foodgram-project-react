@@ -61,12 +61,12 @@ jobs:
           script: |
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram:latest
             sudo docker-compose stop
-            sudo docker-compose rm nesterenok_backend_1
+            sudo docker-compose rm nesterenok_backend
             sudo docker-compose up -d
-            sudo docker-compose exec -T nesterenok_backend_1 python manage.py makemigrations recipes
-            sudo docker-compose exec -T nesterenok_backend_1 python manage.py makemigrations users
-            sudo docker-compose exec -T nesterenok_backend_1 python manage.py migrate --noinput
-            sudo docker-compose exec -T nesterenok_backend_1 python manage.py collectstatic --no-input
+            sudo docker-compose exec -T nesterenok_backend python manage.py makemigrations recipes
+            sudo docker-compose exec -T nesterenok_backend python manage.py makemigrations users
+            sudo docker-compose exec -T nesterenok_backend python manage.py migrate --noinput
+            sudo docker-compose exec -T nesterenok_backend python manage.py collectstatic --no-input
 
 
   send_message:
