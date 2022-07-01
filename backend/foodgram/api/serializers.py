@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from ingredients.models import Ingredient
 from main.models import Basket, Favorite, Follow
 from recipes.models import Recipe, Tag
