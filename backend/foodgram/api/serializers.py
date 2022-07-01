@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from django.db import transaction
 from ingredients.models import Ingredient
 from main.models import Basket, Favorite, Follow
 from recipes.models import Recipe, Tag
@@ -114,14 +115,14 @@ class BasketSerializer(serializers.ModelSerializer):
         if Basket.objects.filter(user=user, recipe__id=recipe).exists():
             raise serializers.ValidationError(
                 {
-                    "errors": "рецепт уже в карзине"
+                    'errors': 'рецепт уже в корзине'
                 }
             )
         return data
 
     def create(self, validated_data):
-        user = validated_data["user"]
-        recipe = validated_data["recipe"]
+        user = validated_data['user']
+        recipe = validated_data['recipe']
         Basket.objects.get_or_create(user=user, recipe=recipe)
         return validated_data
 
@@ -194,22 +195,27 @@ class RecipeSerializer(serializers.ModelSerializer):
             return False
         return Basket.objects.filter(user=request.user, recipe=obj).exists()
 
+    @transaction.atomic
     def create(self, validated_data):
         request = self.context.get('request')
         ingredients = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
         recipe = Recipe.objects.create(author=request.user, **validated_data)
         recipe.tags.set(tags_data)
+        ing_list = []
         for ingredient in ingredients:
             amount = ingredient.get('amount')
-            ingredient_instance = get_object_or_404(Ingredient,
-                                                    pk=ingredient.get('id'))
-            Ingredient.objects.create(recipe=recipe,
-                                      ingredient=ingredient_instance,
-                                      amount=amount)
+            ingredient_instance = Ingredient.objects.get(
+                pk=ingredient.get('id'))
+            new_ing = Ingredient.objects.create(recipe=recipe,
+                                                ingredient=ingredient_instance,
+                                                amount=amount)
+            ing_list.append(new_ing)
+        Ingredient.objects.bulk_create(ing_list)
         recipe.save()
         return recipe
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         ingredients_data = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
@@ -221,18 +227,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         for item in ingredients_data:
             amount = item['amount']
             ingredient_id = item['id']
-            if Ingredient.objects.filter(
-                    id=ingredient_id, amount=amount
-            ).exists():
-                ingredients_instance.remove(
-                    Ingredient.objects.get(id=ingredient_id,
-                                           amount=amount
-                                           ).ingredient)
-            else:
-                Ingredient.objects.get_or_create(
-                    recipe=instance,
-                    ingredient=get_object_or_404(Ingredient, id=ingredient_id),
-                    amount=amount
+            Ingredient.objects.get_or_create(
+                recipe=instance,
+                ingredient=Ingredient.objects.get(id=ingredient_id),
+                amount=amount
                 )
         if validated_data.get('image') is not None:
             instance.image = validated_data.get('image', instance.image)

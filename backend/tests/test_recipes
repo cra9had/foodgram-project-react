@@ -1,8 +1,4 @@
 import pytest
-from django.core.cache import cache
-from django.core.paginator import Page
-from django.urls import reverse
-
 
 from foodgram.recipes.models import Recipe
 from .create_temp import CreateTempData
@@ -14,7 +10,3 @@ class TestRecipeBase:
     def test_recipe_create():
         CreateTempData.create_recipes()
         assert Recipe.objects.count() == 3
-
-    @pytest.mark.django_db
-    def test_recipe_detail(client):
-        pass

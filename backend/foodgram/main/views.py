@@ -17,7 +17,7 @@ from rest_framework.views import APIView
 from .filters import IngredientFilter, RecipeFilter
 from .ingredients_count import ing_count
 from .models import Basket, Favorite
-from .paginators import CustomPageNumberPagination
+from .paginators import SmallPageNumberPagination
 
 User = get_user_model()
 
@@ -40,7 +40,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = [AuthorAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
-    pagination_class = CustomPageNumberPagination
+    pagination_class = SmallPageNumberPagination
 
     def get_serializer_class(self):
         if self.request.method == 'GET':

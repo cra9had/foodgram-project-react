@@ -1,7 +1,7 @@
 
 def ing_count(recipe_list):
 
-    ingredients_for_buy = [[0 for x in range(10000)] for y in range(3)]
+    ingredients_for_buy = [[0 for x in range(1000)] for y in range(3)]
     for recipe in recipe_list:
         for ingredient in recipe.ingredients:
             cur_elmn_idx = ingredients_for_buy[0].index(ingredient.name)
