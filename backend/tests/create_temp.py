@@ -1,8 +1,8 @@
 import tempfile
-from django.contrib.auth import get_user_model
 
+from django.contrib.auth import get_user_model
 from foodgram.ingredients.models import Ingredient
-from foodgram.recipes.models import Tag, Recipe
+from foodgram.recipes.models import Recipe, Tag
 
 User = get_user_model()
 

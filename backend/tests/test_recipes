@@ -1,34 +1,20 @@
 import pytest
 from django.core.cache import cache
 from django.core.paginator import Page
+from django.urls import reverse
 
 
 from foodgram.recipes.models import Recipe
 from .create_temp import CreateTempData
-from .utils import get_field_from_context
 
 
-class TestRecipeView:
+class TestRecipeBase:
 
-    @pytest.mark.django_db(transaction=True)
-    def test_index_recipe_with_image(self, client, recipe):
-        url_index = '/'
-        cache.clear()
-        response = client.get(url_index)
+    @pytest.mark.django_db
+    def test_recipe_create():
+        CreateTempData.create_recipes()
+        assert Recipe.objects.count() == 3
 
-        page_context = get_field_from_context(response.context, Page)
-        assert page_context is not None, (
-            'Проверьте, что передали  автора в контекст главной страницы `/` типа `Page`'
-        )
-        assert len(page_context.object_list) == 1, (
-            'Проверьте, что в контекст главной страницы переданы правильные рецепты автора'
-        )
-        recipes_list = page_context.object_list
-        for recipe in recipes_list:
-            assert hasattr(recipe, 'image'), (
-                'Убедитесь, что рецепт, передаваемая в контекст главной страницы `/`, имеет поле `image`'
-            )
-            assert getattr(recipe, 'image') is not None, (
-                'Убедитесь, что рецепт, передаваемая в контекст главной страницы `/`, имеет поле `image`, '
-                'и туда передается изображение'
-            )
+    @pytest.mark.django_db
+    def test_recipe_detail(client):
+        pass
