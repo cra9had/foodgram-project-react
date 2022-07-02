@@ -22,4 +22,4 @@ RUN pip install -r requirements.txt --no-cache-dir
 COPY . /app
 
 # Выполнить запуск сервера разработки при старте контейнера.
-ENTRYPOINT ["gunicorn.sh"]
+ENTRYPOINT ["/app/gunicorn.sh"]
