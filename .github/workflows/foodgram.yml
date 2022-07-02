@@ -61,7 +61,7 @@ jobs:
           script: |
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodgram:latest
             sudo docker-compose stop
-            sudo docker-compose rm nesterenok_backend_1
+            sudo docker-compose rm backend
             sudo docker-compose up -d
 
 
