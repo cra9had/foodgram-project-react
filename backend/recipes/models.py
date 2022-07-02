@@ -51,7 +51,6 @@ class Recipe(models.Model):
         'Картинка',
         upload_to='posts/',
         blank=True,
-        verbose_name='Картинка',
         help_text='Можете добавить фото.'
     )
 
