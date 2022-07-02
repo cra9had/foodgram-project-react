@@ -62,7 +62,6 @@ class Recipe(models.Model):
 
     ingredients = models.ManyToManyField(
         Ingredient,
-        on_delete=models.SET_NULL,
         related_name='recipes',
         verbose_name='Ингредиенты',
         help_text='Выберите ингредиенты для рецепта.'
