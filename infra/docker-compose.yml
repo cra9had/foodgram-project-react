@@ -45,6 +45,13 @@ services:
       - ../docs/:/usr/share/nginx/html/api/docs/
       - static:/app/static/
       - media:/app/media/
+      # Контейнер nginx будет работать с данными, хранящиеся в томе static_value, 
+      # через свою директорию /var/html/static/
+      - static_value:/var/html/static/
+
+      # Данные, хранящиеся в томе media_value, будут доступны в контейнере nginx
+      # через директорию /var/html/media/
+      - media_value:/var/html/media/
     restart: always
     depends_on:
       - backend
