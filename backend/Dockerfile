@@ -22,4 +22,4 @@ RUN pip install -r requirements.txt --no-cache-dir
 COPY . /app
 
 # Выполнить запуск сервера разработки при старте контейнера.
-CMD ["gunicorn", "foodgram.wsgi:application", "--bind", ":8000"]
+CMD ["gunicorn", "foodgram.wsgi:application", "--bind", "0:8000"]
