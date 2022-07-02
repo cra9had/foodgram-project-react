@@ -69,7 +69,6 @@ class Recipe(models.Model):
 
     tags = models.ManyToManyField(
         Tag,
-        on_delete=models.SET_NULL,
         related_name='recipes',
         verbose_name='Тэги',
         help_text='Выберите теги для рецепта.'
