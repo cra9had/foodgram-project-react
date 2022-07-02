@@ -22,6 +22,7 @@ RUN pip install -r requirements.txt --no-cache-dir
 COPY . /app
 
 # Выполнить запуск сервера разработки при старте контейнера.
+ADD entrypoint.sh /entrypoint.sh
 RUN chmod a+x /gunicorn.sh
 ENTRYPOINT ["/gunicorn.sh"]
 CMD gunicorn foodgram.wsgi:application --bind 0.0.0.0:8000
