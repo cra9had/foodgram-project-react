@@ -25,7 +25,7 @@ SECRET_KEY = 'x4ug(yjcryqurq12o2gsu)s-8w$0t=24!@9z=j@zjv+%wu886@'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['178.154.197.69', ]
+ALLOWED_HOSTS = ['178.154.197.69', '127.0.0.1']
 
 
 # Application definition
@@ -120,6 +120,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
