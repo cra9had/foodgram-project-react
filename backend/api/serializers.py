@@ -3,11 +3,10 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from rest_framework import serializers
-
 from ingredients.models import Ingredient
 from main.models import Basket, Favorite, Follow
 from recipes.models import Recipe, Tag
+from rest_framework import serializers
 
 User = get_user_model()
 
