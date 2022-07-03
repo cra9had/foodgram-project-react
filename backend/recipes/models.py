@@ -27,6 +27,11 @@ class Tag(models.Model):
         help_text='Введите slug тэга.'
         )
 
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
+
     def __str__(self):
         return self.slug
 
@@ -49,7 +54,7 @@ class Recipe(models.Model):
 
     image = models.ImageField(
         'Картинка',
-        upload_to='posts/',
+        upload_to='recipes/images/',
         blank=True,
         help_text='Можете добавить фото.'
     )
@@ -62,7 +67,7 @@ class Recipe(models.Model):
 
     ingredients = models.ManyToManyField(
         Ingredient,
-        related_name='recipes',
+        through='RecipeIngredient',
         verbose_name='Ингредиенты',
         help_text='Выберите ингредиенты для рецепта.'
     )
@@ -80,5 +85,38 @@ class Recipe(models.Model):
         validators=[MinValueValidator(1)]
     )
 
+    class Meta:
+        ordering = ['-id']
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
+
     def __str__(self):
         return self.name
+
+
+class RecipeIngredient(models.Model):
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='recipe_ingredients',
+        verbose_name='Рецепт'
+    )
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        related_name='recipe_ingredients',
+        verbose_name='Ингредиент'
+    )
+    amount = models.IntegerField(
+        validators=[MinValueValidator(1)],
+        default=1,
+        verbose_name='Количество'
+    )
+
+    class Meta:
+        ordering = ['-id']
+        verbose_name = 'Ингредиент рецепта'
+        verbose_name_plural = 'Ингредиенты рецептов'
+
+    def __str__(self):
+        return '{} - {}'.format(self.ingredient, self.amount)

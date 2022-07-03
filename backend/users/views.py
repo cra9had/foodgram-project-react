@@ -72,4 +72,4 @@ class FollowViewSet(ListAPIView):
     pagination_class = SmallPageNumberPagination
 
     def get_queryset(self):
-        return User.objects.filter(subscriptions__user=self.request.user)
+        return User.objects.filter(following__user=self.request.user)

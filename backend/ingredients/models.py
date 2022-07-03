@@ -9,11 +9,6 @@ class Ingredient(models.Model):
         help_text='Введите название ингредиента.'
     )
 
-    amount = models.IntegerField(
-        verbose_name='Количество ингредиента',
-        help_text='Введите количество ингредиента.'
-    )
-
     CHOICES = (
         ('кг', 'Килограмм'),
         ('г', 'грамм'),
@@ -27,3 +22,11 @@ class Ingredient(models.Model):
         help_text='Введите единицы измерения().',
         choices=CHOICES
     )
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
+
+    def __str__(self):
+        return self.name

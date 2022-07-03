@@ -96,11 +96,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 recipe = Recipe.objects.get(id=pk)
             except Recipe.DoesNotExist:
                 return bad_request
-            shopping_list = Basket.objects.get(
+            basket = Basket.objects.get(
                 user=request.user,
                 recipe=recipe,
             )
-            shopping_list.delete()
+            basket.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Basket.DoesNotExist:
             return bad_request

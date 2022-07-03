@@ -17,10 +17,16 @@ class Follow(models.Model):
         related_name='following')
 
     class Meta:
+        ordering = ['user', 'author']
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'author'], name='unique follow')
         ]
+
+    def __str__(self):
+        return '{} - {}'.format(self.user, self.author)
 
 
 class Favorite(models.Model):
@@ -35,10 +41,16 @@ class Favorite(models.Model):
         related_name='favouriting')
 
     class Meta:
+        ordering = ['user', 'recipe']
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'], name='unique favorite')
         ]
+
+    def __str__(self):
+        return '{} - {}'.format(self.user, self.recipe)
 
 
 class Basket(models.Model):
@@ -53,6 +65,9 @@ class Basket(models.Model):
         related_name='buying')
 
     class Meta:
+        ordering = ['user', 'recipe']
+        verbose_name = 'Список покупок'
+        verbose_name_plural = 'Списки покупок'
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'], name='unique basket')
