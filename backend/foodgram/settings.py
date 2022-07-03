@@ -25,7 +25,7 @@ SECRET_KEY = 'x4ug(yjcryqurq12o2gsu)s-8w$0t=24!@9z=j@zjv+%wu886@'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['178.154.197.69', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['178.154.197.69', '127.0.0.1', 'localhost', 'backend']
 
 
 # Application definition
@@ -146,10 +146,9 @@ REST_FRAMEWORK = {
 }
 
 DJOSER = {
-    'HIDE_USERS': False,
     'SERIALIZERS': {
-        'users': 'api.serializers.UserSerializer',
-
+        'user_create': 'api.serializers.CustomUserCreateSerializer',
+        'current_user': 'api.serializers.CustomUserSerializer',
     },
 
     'PERMISSIONS': {
@@ -166,5 +165,8 @@ DJOSER = {
         'user_list': ['rest_framework.permissions.AllowAny'],
         'token_create': ['rest_framework.permissions.AllowAny'],
         'token_destroy': ['rest_framework.permissions.IsAuthenticated'],
-    }
+    },
+
+    'LOGIN_FIELD': 'email',
+    'HIDE_USERS': False,
 }

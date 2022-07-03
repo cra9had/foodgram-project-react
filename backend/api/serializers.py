@@ -1,4 +1,5 @@
 from django.conf import settings
+from djoser.serializers import UserCreateSerializer, UserSerializer
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -8,6 +9,29 @@ from recipes.models import Recipe, Tag
 from rest_framework import serializers
 
 User = get_user_model()
+
+
+class UserCreateSerializer(UserCreateSerializer):
+    class Meta:
+        model = User
+        fields = ('email', 'id', 'username', 'first_name', 'last_name',
+                  'password')
+
+
+class UserSerializer(UserSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('email', 'id', 'username', 'first_name', 'last_name',
+                  'is_subscribed')
+
+    def get_is_subscribed(self, author):
+        user = self.context.get('request').user
+        return not user.is_anonymous and Follow.objects.filter(
+            user=user,
+            author=author.id
+        ).exists()
 
 
 class UserSerializer(serializers.ModelSerializer):
