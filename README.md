@@ -17,7 +17,7 @@
 
 > **docker-compose up**
 
-## Адрес API redoc
+## Адрес сайта
 
 http://178.154.197.69/
 
