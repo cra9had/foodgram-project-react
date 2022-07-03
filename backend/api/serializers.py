@@ -205,11 +205,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = [
-            'id', 'tags', 'author', 'ingredients', 'is_favorited',
-            'get_is_in_basket', 'name', 'image', 'text',
-            'cooking_time', 'pub_date'
-        ]
+        fields = ['__all__']
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
