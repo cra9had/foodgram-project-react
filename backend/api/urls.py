@@ -1,4 +1,4 @@
-from django.urls import include, re_path
+from django.urls import include, path
 from main.views import IngredientViewSet, RecipeViewSet, TagsViewSet
 from rest_framework.routers import DefaultRouter
 
@@ -9,5 +9,5 @@ router.register('tags', TagsViewSet, basename='tags')
 router.register('recipes', RecipeViewSet, basename='recipes')
 
 urlpatterns = [
-    re_path(r'^', include(router.urls)),
+    path('', include(router.urls)),
 ]
