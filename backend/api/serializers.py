@@ -1,6 +1,6 @@
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.forms import ImageField
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from ingredients.models import Ingredient
@@ -107,16 +107,20 @@ class ShowFollowsSerializer(UserSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'is_subscribed', 'recipes', 'recipes_count')
+        fields = ('email', 'id', 'username', 'first_name', 'last_name',
+                  'is_subscribed', 'recipes', 'recipes_count')
 
-    def get_recipes(self, obj):
-        recipes = obj.recipes.all()[:settings.RECIPES_LIMIT]
-        return RecipeFollowSerializer(recipes, many=True).data
+    def get_recipes_count(self, author):
+        return author.recipes.count()
 
-    def get_recipes_count(self, obj):
-        queryset = Recipe.objects.filter(author=obj)
-        return queryset.count()
+    def get_recipes(self, author):
+        recipes = author.recipes.all()
+        recipes_limit = self.context.get('request').query_params.get(
+            'recipes_limit'
+        )
+        if recipes_limit:
+            recipes = recipes[:int(recipes_limit)]
+        return RecipeMinifiedSerializer(recipes, many=True).data
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -271,3 +275,11 @@ class ReadRecipeSerializer(RecipeSerializer):
     def get_ingredients(self, obj):
         ingredients = Ingredient.objects.filter(recipe=obj)
         return IngredientAmountSerializer(ingredients, many=True).data
+
+
+class RecipeMinifiedSerializer(serializers.ModelSerializer):
+    image = ImageField()
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
