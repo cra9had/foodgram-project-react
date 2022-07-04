@@ -274,7 +274,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def validate_ingredients(self, ingredients):
         if not ingredients:
-            raise serializers.ValidationError('В рецепте не заполнены ингредиенты!')
+            raise serializers.ValidationError(
+                'В рецепте не заполнены ингредиенты!')
         return ingredients
 
     def validate_tags(self, tags):
@@ -305,7 +306,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def validate_cooking_time(self, cooking_time):
         if not cooking_time:
-            raise serializers.ValidationError('Не заполнено время приготовления рецепта!')
+            raise serializers.ValidationError(
+                'Не заполнено время приготовления рецепта!')
         return cooking_time
 
     @transaction.atomic
