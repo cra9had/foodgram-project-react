@@ -230,7 +230,7 @@ class IngredientAmountCreate(IngredientAmountSerializer):
     def to_representation(self, instance):
         ingredient_in_recipe = [
             item for item in
-            Ingredient.objects.filter(ingredient=instance)
+            Ingredient.objects.filter(id=instance.id)
         ]
         return IngredientAmountSerializer(ingredient_in_recipe).data
 
