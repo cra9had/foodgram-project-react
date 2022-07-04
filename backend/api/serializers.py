@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from ingredients.models import Ingredient
 from main.models import Basket, Favorite, Follow
-from recipes.models import Recipe, Tag
+from recipes.models import Recipe, Tag, RecipeIngredient
 from rest_framework import serializers
 
 User = get_user_model()
@@ -272,7 +272,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             amount = ingredient.get('amount')
             ingredient_instance = Ingredient.objects.get(
                 pk=ingredient.get('id'))
-            new_ing = Ingredient.objects.create(recipe=recipe,
+            new_ing = RecipeIngredient.objects.create(recipe=recipe,
                                                 ingredient=ingredient_instance,
                                                 amount=amount)
             ing_list.append(new_ing)
@@ -294,7 +294,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             ingredient_id = item['id']
             Ingredient.objects.get_or_create(
                 recipe=instance,
-                ingredient=Ingredient.objects.get(id=ingredient_id),
+                ingredient=RecipeIngredient.objects.get(ingredients=instance),
                 amount=amount
                 )
         if validated_data.get('image') is not None:
