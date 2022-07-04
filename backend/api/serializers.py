@@ -299,10 +299,10 @@ class RecipeSerializer(serializers.ModelSerializer):
                 )
         return name
 
-    def validate_description(self, description):
-        if not description:
+    def validate_text(self, text):
+        if not text:
             raise serializers.ValidationError('Не заполнено описание рецепта!')
-        return description
+        return text
 
     def validate_cooking_time(self, cooking_time):
         if not cooking_time:
@@ -330,8 +330,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         image = self.validate_image(
             self.initial_data.get('image')
         )
-        description = self.validate_description(
-            self.initial_data.get('description')
+        text = self.validate_text(
+            self.initial_data.get('text')
         )
         tags = self.validate_tags(
             self.initial_data.get('tags')
@@ -343,7 +343,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             author=current_user,
             name=name,
             image=image,
-            description=description,
+            text=text,
             cooking_time=cooking_time
         )
         self.create_recipe_ingredients(
