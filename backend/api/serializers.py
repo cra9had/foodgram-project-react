@@ -268,7 +268,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             list: Список ингридиентов в рецепте.
         """
         ingredients = obj.ingredients.values(
-            'id', 'name', 'measurement_unit', amount=F('recipe__amount')
+            'id', 'name', 'unit', amount=F('recipe__amount')
         )
         return ingredients
 
