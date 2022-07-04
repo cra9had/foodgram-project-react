@@ -267,10 +267,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         Returns:
             list: Список ингридиентов в рецепте.
         """
-        ingredients = obj.ingredients.values(
+        return obj.ingredients.values(
             'id', 'name', 'unit', amount=F('recipe__amount')
         )
-        return ingredients
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
