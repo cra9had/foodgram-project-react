@@ -13,10 +13,11 @@ User = get_user_model()
 class Base64ImageField(serializers.ImageField):
 
     def to_internal_value(self, data):
-        from django.core.files.base import ContentFile
         import base64
-        import six
         import uuid
+
+        import six
+        from django.core.files.base import ContentFile
 
         # Check if this is a base64 string
         if isinstance(data, six.string_types):
@@ -47,9 +48,8 @@ class Base64ImageField(serializers.ImageField):
         import imghdr
 
         extension = imghdr.what(file_name, decoded_file)
-        extension = "jpg" if extension == "jpeg" else extension
 
-        return extension
+        return "jpg" if extension == "jpeg" else extension
 
 
 class UserCreateSerializer(UserCreateSerializer):
