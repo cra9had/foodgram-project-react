@@ -235,6 +235,17 @@ class IngredientAmountCreate(IngredientAmountSerializer):
         return IngredientAmountSerializer(ingredient_in_recipe).data
 
 
+class IngredientInRecipeSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source="ingredient.id")
+    name = serializers.ReadOnlyField(source="ingredient.name")
+    unit = serializers.ReadOnlyField(
+        source="ingredient.unit")
+
+    class Meta:
+        model = RecipeIngredient
+        fields = ("id", "name", "unit", "amount")
+
+
 class RecipeSerializer(serializers.ModelSerializer):
     is_favorited = serializers.SerializerMethodField()
     is_in_basket = serializers.SerializerMethodField()
@@ -242,7 +253,8 @@ class RecipeSerializer(serializers.ModelSerializer):
                                               many=True)
     author = UserSerializer(read_only=True)
     image = Base64ImageField()
-    ingredients = RecipeIngredient(many=True)
+    ingredients = IngredientInRecipeSerializer(source="recipe_ingredients",
+                                               many=True)
 
     class Meta:
         model = Recipe
