@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import F
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from ingredients.models import Ingredient
@@ -254,22 +253,12 @@ class RecipeSerializer(serializers.ModelSerializer):
                                               many=True)
     author = UserSerializer(read_only=True)
     image = Base64ImageField()
-    ingredients = serializers.SerializerMethodField()
+    ingredients = IngredientInRecipeSerializer(source="recipe_ingredients",
+                                               many=True)
 
     class Meta:
         model = Recipe
         fields = '__all__'
-
-    def get_ingredients(self, obj):
-        """Получает список ингридиентов для рецепта.
-        Args:
-            obj (Recipe): Запрошенный рецепт.
-        Returns:
-            list: Список ингридиентов в рецепте.
-        """
-        return obj.ingredients.values(
-            'id', 'name', 'unit', amount=F('recipe__amount')
-        )
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
@@ -303,29 +292,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         Ingredient.objects.bulk_create(ing_list)
         recipe.save()
         return recipe
-
-    @transaction.atomic
-    def update(self, instance, validated_data):
-        ingredients_data = validated_data.pop('ingredients')
-        tags_data = validated_data.pop('tags')
-        recipe = Recipe.objects.filter(id=instance.id)
-        recipe.update(**validated_data)
-        ingredients_instance = [
-            ingredient for ingredient in instance.ingredients.all()
-        ]
-        for item in ingredients_data:
-            amount = item['amount']
-            ingredient_id = item['id']
-            Ingredient.objects.get_or_create(
-                recipe=instance,
-                ingredient=Ingredient.objects.get(id=ingredient_id),
-                amount=amount
-                )
-        if validated_data.get('image') is not None:
-            instance.image = validated_data.get('image', instance.image)
-        instance.ingredients.remove(*ingredients_instance)
-        instance.tags.set(tags_data)
-        return instance
 
 
 class ReadRecipeSerializer(RecipeSerializer):
