@@ -272,6 +272,42 @@ class RecipeSerializer(serializers.ModelSerializer):
             return False
         return Basket.objects.filter(user=request.user, recipe=obj).exists()
 
+    def validate_ingredients(self, ingredients):
+        if not ingredients:
+            raise serializers.ValidationError('В рецепте не заполнены ингредиенты!')
+        return ingredients
+
+    def validate_tags(self, tags):
+        if not tags:
+            raise serializers.ValidationError('В рецепте не заполнены теги!')
+        return tags
+
+    def validate_image(self, image):
+        if not image:
+            raise serializers.ValidationError('Добавьте картинку рецепта!')
+        return image
+
+    def validate_name(self, name):
+        if not name:
+            raise serializers.ValidationError('Не заполнено название рецепта!')
+        if self.context.get('request').method == 'POST':
+            current_user = self.context.get('request').user
+            if Recipe.objects.filter(author=current_user, name=name).exists():
+                raise serializers.ValidationError(
+                    'Рецепт с таким названием у вас уже есть!'
+                )
+        return name
+
+    def validate_description(self, description):
+        if not description:
+            raise serializers.ValidationError('Не заполнено описание рецепта!')
+        return description
+
+    def validate_cooking_time(self, cooking_time):
+        if not cooking_time:
+            raise serializers.ValidationError('Не заполнено время приготовления рецепта!')
+        return cooking_time
+
     @transaction.atomic
     def create(self, validated_data):
         request = self.context.get('request')
