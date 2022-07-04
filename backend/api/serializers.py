@@ -310,15 +310,42 @@ class RecipeSerializer(serializers.ModelSerializer):
                 'Не заполнено время приготовления рецепта!')
         return cooking_time
 
+    def create_recipe_ingredients(self, ingredients, recipe):
+        for i in ingredients:
+            RecipeIngredient.objects.create(
+                recipe=recipe,
+                ingredient_id=i.get('id'),
+                amount=i.get('amount'),
+            )
+
     @transaction.atomic
     def create(self, validated_data):
+        current_user = self.context.get('request').user
         ingredients = self.validate_ingredients(
             self.initial_data.get('ingredients')
+        )
+        name = self.validate_name(
+            self.initial_data.get('name')
+        )
+        image = self.validate_image(
+            self.initial_data.get('image')
+        )
+        description = self.validate_description(
+            self.initial_data.get('description')
         )
         tags = self.validate_tags(
             self.initial_data.get('tags')
         )
-        recipe = Recipe.objects.create(**validated_data)
+        cooking_time = self.validate_cooking_time(
+            self.initial_data.get('cooking_time')
+        )
+        recipe = Recipe.objects.create(
+            author=current_user,
+            name=name,
+            image=image,
+            description=description,
+            cooking_time=cooking_time
+        )
         self.create_recipe_ingredients(
             ingredients,
             recipe
