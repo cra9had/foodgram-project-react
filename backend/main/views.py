@@ -73,7 +73,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
 
     @action(detail=True, permission_classes=[AuthorAdminOrReadOnly])
-    def basket(self, request, pk):
+    def shopping_cart(self, request, pk):
         data = {'user': request.user.id, 'recipe': pk}
         serializer = BasketSerializer(
             data=data,
@@ -83,7 +83,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @basket.mapping.delete
+    @shopping_cart.mapping.delete
     def delete_basket(self, request, pk):
         if request.user.is_anonymous:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
