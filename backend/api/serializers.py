@@ -354,16 +354,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         return recipe
 
 
-class ReadRecipeSerializer(RecipeSerializer):
-    tags = TagSerializer(read_only=True, many=True)
-    author = UserSerializer(read_only=True)
-    ingredients = serializers.SerializerMethodField()
-
-    def get_ingredients(self, obj):
-        ingredients = Ingredient.objects.filter(recipe=obj)
-        return IngredientAmountSerializer(ingredients, many=True).data
-
-
 class RecipeMinifiedSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
 
