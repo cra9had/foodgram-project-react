@@ -47,7 +47,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     #         return ReadRecipeSerializer
     #     return RecipeSerializer
 
-    @action(detail=True, permission_classes=[AuthorAdminOrReadOnly])
+    @action(detail=True, permission_classes=[permissions.IsAuthenticated])
     def favorite(self, request, pk):
         data = {'user': request.user.id, 'recipe': pk}
         serializer = FavoriteSerializer(
@@ -72,7 +72,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-    @action(detail=True, permission_classes=[AuthorAdminOrReadOnly])
+    @action(detail=True, permission_classes=[permissions.IsAuthenticated])
     def shopping_cart(self, request, pk):
         data = {'user': request.user.id, 'recipe': pk}
         serializer = BasketSerializer(
