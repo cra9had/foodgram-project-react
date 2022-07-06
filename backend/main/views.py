@@ -1,8 +1,7 @@
 from api.permissions import AuthorAdminOrReadOnly
 from api.serializers import (BasketSerializer, FavoriteSerializer,
-                             IngredientSerializer,
-                             RecipeFollowSerializer, RecipeSerializer,
-                             TagSerializer)
+                             IngredientSerializer, RecipeFollowSerializer,
+                             RecipeSerializer, TagSerializer)
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
