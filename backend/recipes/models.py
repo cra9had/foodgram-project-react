@@ -56,7 +56,8 @@ class Recipe(models.Model):
         'Картинка',
         upload_to='recipes/images/',
         blank=True,
-        help_text='Можете добавить фото.'
+        help_text='Можете добавить фото.',
+        max_length=500
     )
 
     text = models.TextField(
