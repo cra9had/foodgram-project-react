@@ -23,7 +23,7 @@ User = get_user_model()
 
 @api_view(['GET', ])
 @permission_classes([permissions.IsAuthenticated])
-def download_basket(request):
+def download_shopping_cart(request):
     user = request.user
     basket = user.buyer.all()
     txt_file_output = ing_count(basket)
