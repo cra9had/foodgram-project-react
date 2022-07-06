@@ -41,11 +41,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
     pagination_class = SmallPageNumberPagination
+    serializer_class = RecipeSerializer
 
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return ReadRecipeSerializer
-        return RecipeSerializer
+    # def get_serializer_class(self):
+    #     if self.request.method == 'GET':
+    #         return ReadRecipeSerializer
+    #     return RecipeSerializer
 
     @action(detail=True, permission_classes=[AuthorAdminOrReadOnly])
     def favorite(self, request, pk):
