@@ -252,7 +252,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     is_in_basket = serializers.SerializerMethodField()
     tags = TagSerializer(read_only=True, many=True)
     author = UserSerializer(read_only=True)
-    image = Base64ImageField()
+    image = serializers.ImageField()
     ingredients = IngredientInRecipeSerializer(source="recipe_ingredients",
                                                many=True)
 
@@ -355,7 +355,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class RecipeMinifiedSerializer(serializers.ModelSerializer):
-    image = Base64ImageField()
+    image = serializers.ImageField()
 
     class Meta:
         model = Recipe

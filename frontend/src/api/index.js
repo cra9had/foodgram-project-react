@@ -152,6 +152,13 @@ class Api {
     ingredients = []
   }) {
     const token = localStorage.getItem('token')
+    const FormData = new FormData()
+    FormData.append('name', name)
+    FormData.append('image', image)
+    FormData.append('tags', tags)
+    FormData.append('cooking_time', cooking_time)
+    FormData.append('text', text)
+    FormData.append('ingredients', ingredients)
     return fetch(
       '/api/recipes/',
       {
@@ -160,14 +167,7 @@ class Api {
           ...this._headers,
           'authorization': `Token ${token}`
         },
-        body: JSON.stringify({
-          name,
-          image,
-          tags,
-          cooking_time,
-          text,
-          ingredients
-        })
+        body: FormData
       }
     ).then(this.checkResponse)
   }
