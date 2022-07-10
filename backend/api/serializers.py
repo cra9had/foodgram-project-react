@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
+from drf_extra_fields.fields import Base64ImageField
 from ingredients.models import Ingredient
 from main.models import Basket, Favorite, Follow
 from recipes.models import Recipe, RecipeIngredient, Tag
@@ -10,46 +11,46 @@ from rest_framework import serializers
 User = get_user_model()
 
 
-# class Base64ImageField(serializers.ImageField):
+class Base64ImageField(serializers.ImageField):
 
-#     def to_internal_value(self, data):
-#         import base64
-#         import uuid
+    def to_internal_value(self, data):
+        import base64
+        import uuid
 
-#         import six
-#         from django.core.files.base import ContentFile
+        import six
+        from django.core.files.base import ContentFile
 
-#         # Check if this is a base64 string
-#         if isinstance(data, six.string_types):
-#             # Check if the base64 string is in the "data:" format
-#             if 'data:' in data and ';base64,' in data:
-#                 # Break out the header from the base64 content
-#                 header, data = data.split(';base64,')
+        # Check if this is a base64 string
+        if isinstance(data, six.string_types):
+            # Check if the base64 string is in the "data:" format
+            if 'data:' in data and ';base64,' in data:
+                # Break out the header from the base64 content
+                header, data = data.split(';base64,')
 
-#             # Try to decode the file. Return validation error if it fails.
-#             try:
-#                 decoded_file = base64.b64decode(data)
-#             except TypeError:
-#                 self.fail('invalid_image')
+            # Try to decode the file. Return validation error if it fails.
+            try:
+                decoded_file = base64.b64decode(data)
+            except TypeError:
+                self.fail('invalid_image')
 
-#             # Generate file name:
-#             file_name = str(uuid.uuid4())[:12]
-#             # 12 characters are more than enough.
-#             # Get the file name extension:
-#             file_extension = self.get_file_extension(file_name, decoded_file)
+            # Generate file name:
+            file_name = str(uuid.uuid4())[:12]
+            # 12 characters are more than enough.
+            # Get the file name extension:
+            file_extension = self.get_file_extension(file_name, decoded_file)
 
-#             complete_file_name = "%s.%s" % (file_name, file_extension, )
+            complete_file_name = "%s.%s" % (file_name, file_extension, )
 
-#             data = ContentFile(decoded_file, name=complete_file_name)
+            data = ContentFile(decoded_file, name=complete_file_name)
 
-#         return super(Base64ImageField, self).to_internal_value(data)
+        return super(Base64ImageField, self).to_internal_value(data)
 
-#     def get_file_extension(self, file_name, decoded_file):
-#         import imghdr
+    def get_file_extension(self, file_name, decoded_file):
+        import imghdr
 
-#         extension = imghdr.what(file_name, decoded_file)
+        extension = imghdr.what(file_name, decoded_file)
 
-#         return "jpg" if extension == "jpeg" else extension
+        return "jpg" if extension == "jpeg" else extension
 
 
 class UserCreateSerializer(UserCreateSerializer):
@@ -251,7 +252,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     is_in_basket = serializers.SerializerMethodField()
     tags = TagSerializer(read_only=True, many=True)
     author = UserSerializer(read_only=True)
-    image = serializers.ImageField()
+    image = Base64ImageField()
     ingredients = IngredientInRecipeSerializer(source="recipe_ingredients",
                                                many=True)
 
