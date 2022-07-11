@@ -1,5 +1,7 @@
+import base64
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
@@ -7,8 +9,6 @@ from ingredients.models import Ingredient
 from main.models import Basket, Favorite, Follow
 from recipes.models import Recipe, RecipeIngredient, Tag
 from rest_framework import serializers
-import base64
-from django.core.files.base import ContentFile
 
 
 User = get_user_model()
@@ -285,7 +285,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         _name, ext = _format.split('/')
         if not name:
             name = _name.split(":")[-1]
-        return ContentFile(base64.b64decode(_img_str), name='{}.{}'.format(name, ext))
+        return ContentFile(base64.b64decode(_img_str),
+                           name='{}.{}'.format(name, ext))
 
     @transaction.atomic
     def create(self, validated_data):
