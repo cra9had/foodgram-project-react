@@ -10,7 +10,6 @@ from main.models import Basket, Favorite, Follow
 from recipes.models import Recipe, RecipeIngredient, Tag
 from rest_framework import serializers
 
-
 User = get_user_model()
 
 
