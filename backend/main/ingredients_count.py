@@ -1,9 +1,9 @@
 
-def ing_count(recipe_list):
+def ing_count(baskets):
 
     ingredients_for_buy = [[0 for x in range(1000)] for y in range(3)]
-    for recipe in recipe_list:
-        for ingredient in recipe.ingredients:
+    for basket in baskets:
+        for ingredient in basket.recipe.ingredients.all():
             cur_elmn_idx = ingredients_for_buy[0].index(ingredient.name)
             amount_add = ingredient.amount
             if ingredient.unit == 'л':
@@ -38,5 +38,5 @@ def ing_count(recipe_list):
         else:
             ingredients_list = (ingredients_list + name + ' '
                                 + (str(amount) + ' ' + unit + '/n'))
-
+    print(ingredients_list)
     return ingredients_list

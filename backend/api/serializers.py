@@ -39,7 +39,7 @@ class UserSerializer(UserSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'email', 'id')
+        fields = ('username', 'email', 'id', 'first_name', 'last_name')
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -153,7 +153,8 @@ class BasketSerializer(serializers.ModelSerializer):
                     'errors': 'рецепт уже в корзине'
                 }
             )
-        return data
+        return {"user": User.objects.get(pk=user),
+                "recipe": Recipe.objects.get(pk=recipe)}
 
     def create(self, validated_data):
         user = validated_data['user']
@@ -330,7 +331,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 class RecipeMinifiedSerializer(serializers.ModelSerializer):
     image = serializers.ImageField()
+    author = UserSerializer(read_only=True)
 
     class Meta:
         model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
+        fields = ('id', 'name', 'image', 'cooking_time', 'author')
