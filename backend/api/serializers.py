@@ -59,11 +59,16 @@ class FavoriteSerializer(serializers.ModelSerializer):
                     "errors": "Рецепт уже в избранном"
                 }
             )
-        return data
+
+        return {
+            "user": User.objects.get(pk=data['user']['id']),
+            "recipe": Recipe.objects.get(pk=data['recipe']['id'])
+        }
 
     def create(self, validated_data):
         user = validated_data["user"]
         recipe = validated_data["recipe"]
+        print(user, recipe)
         Favorite.objects.get_or_create(user=user, recipe=recipe)
         return validated_data
 

@@ -36,7 +36,7 @@ def download_shopping_cart(request):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all().order_by('-id')
-    permission_classes = [AuthorAdminOrReadOnly]
+    permission_classes = (permissions.IsAuthenticated,)
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
     pagination_class = SmallPageNumberPagination
