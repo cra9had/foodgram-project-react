@@ -85,7 +85,7 @@ class CreateFollowSerializer(serializers.ModelSerializer):
         user = data['user']['id']
         author = data['author']['id']
         follow_exist = Follow.objects.filter(
-            user=user, author__id=author
+            user__id=user, author__id=author
         ).exists()
         if user == author:
             raise serializers.ValidationError(
@@ -98,8 +98,9 @@ class CreateFollowSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         author = validated_data.get('author')
         author = get_object_or_404(User, pk=author.get('id'))
-        user = validated_data.get('user')
-        return Follow.objects.create(user=user, author=author)
+        user = User.objects.get(id=validated_data["user"]["id"])
+        Follow.objects.create(user=user, author=author)
+        return validated_data
 
 
 class RecipeFollowSerializer(serializers.ModelSerializer):
@@ -336,3 +337,20 @@ class RecipeMinifiedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time', 'author')
+
+
+class FollowerSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+    recipes = RecipeSerializer(many=True)
+    recipes_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username', 'first_name', 'last_name', 'is_subscribed', 'recipes', 'recipes_count')
+
+    @staticmethod
+    def get_is_subscribed(obj):
+        return True
+
+    def get_recipes_count(self, obj):
+        return obj.recipes.count()

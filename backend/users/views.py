@@ -1,5 +1,5 @@
 from api.serializers import (CreateFollowSerializer, ShowFollowsSerializer,
-                             UserSerializer)
+                             UserSerializer, FollowerSerializer)
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
@@ -23,31 +23,26 @@ class CustomUserViewSet(UserViewSet):
     def me(self, request, *args, **kwargs):
         return super(CustomUserViewSet, self).me(request, *args, **kwargs)
 
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def subscriptions(self, request):
+        queryset = User.objects.filter(following__user=request.user)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = FollowerSerializer(queryset, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['post'],
             permission_classes=[IsAuthenticated])
     def subscribe(self, request, id=None):
-        user = request.user
-        author = get_object_or_404(User, id=id)
-        if user == author:
-            return Response(
-                {'Нельзя подписаться на самого себя!'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        if Follow.objects.filter(
-                user=user, author=author
-        ).exists():
-            return Response(
-                {'Нельзя подписаться повторно!'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        Follow.objects.create(
-            user=user,
-            author=author
-        )
         serializer = CreateFollowSerializer(
-            author,
+            data=dict(author=id, user=request.user.id),
             context={'request': request}
         )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete
