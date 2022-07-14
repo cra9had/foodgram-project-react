@@ -25,8 +25,7 @@ User = get_user_model()
 @permission_classes([permissions.IsAuthenticated])
 def download_shopping_cart(request):
     user = request.user
-    basket = user.buyer.all()
-    txt_file_output = ing_count(basket)
+    txt_file_output = ing_count(user)
     response = HttpResponse(txt_file_output, 'Content-Type: text/plain')
     response['Content-Disposition'] = (
         'attachment;' 'filename="Список_покупок.txt"'
@@ -51,6 +50,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
             print(Recipe.objects.filter(buying__user=self.request.user))
             return Recipe.objects.filter(buying__user=self.request.user)
         return Recipe.objects.all().order_by('-id')
+
+    @action(detail=False, permission_classes=[permissions.IsAuthenticated])
+    def download_shopping_cart(self, request):
+        user = request.user
+        txt_file_output = ing_count(user)
+        print(txt_file_output)
+        response = HttpResponse(txt_file_output, 'Content-Type: text/plain')
+        response['Content-Disposition'] = (
+            'attachment;' 'filename="Список_покупок.txt"'
+        )
+        return response
 
     @action(detail=True,
             permission_classes=[permissions.IsAuthenticated],
