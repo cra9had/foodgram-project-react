@@ -44,10 +44,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         is_favorited = self.request.GET.get("is_favorited")
-        if not is_favorited:
-            return Recipe.objects.all().order_by('-id')
-        else:
+        is_in_shopping_cart = self.request.GET.get("is_in_shopping_cart")
+        if is_favorited:
             return Recipe.objects.filter(favouriting__user=self.request.user)
+        if is_in_shopping_cart:
+            print(Recipe.objects.filter(buying__user=self.request.user))
+            return Recipe.objects.filter(buying__user=self.request.user)
+        return Recipe.objects.all().order_by('-id')
 
     @action(detail=True,
             permission_classes=[permissions.IsAuthenticated],
@@ -121,10 +124,16 @@ class TagsViewSet(viewsets.ReadOnlyModelViewSet):
 
 class IngredientViewSet(viewsets.ModelViewSet):
     serializer_class = IngredientSerializer
-    queryset = Ingredient.objects.all()
+    # queryset = Ingredient.objects.all()
     permission_classes = (permissions.AllowAny, )
     pagination_class = None
     filterset_class = IngredientFilter
+
+    def get_queryset(self):
+        name = self.request.GET.get('name')
+        if name:
+            return Ingredient.objects.filter(name__istartswith=name)
+        return Ingredient.objects.all()
 
 
 class BasketView(APIView):

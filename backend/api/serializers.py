@@ -166,11 +166,15 @@ class BasketSerializer(serializers.ModelSerializer):
 
 class IngredientSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField()
-    unit = serializers.ReadOnlyField()
+    measurement_unit = serializers.SerializerMethodField()
 
     class Meta:
         model = Ingredient
-        fields = ['id', 'name', 'unit']
+        fields = ['id', 'name', 'measurement_unit']
+
+    @staticmethod
+    def get_measurement_unit(obj):
+        return obj.unit
 
 
 class IngredientAmountSerializer(serializers.ModelSerializer):
@@ -206,17 +210,17 @@ class IngredientAmountCreate(IngredientAmountSerializer):
 class IngredientInRecipeSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source="ingredient.id")
     name = serializers.ReadOnlyField(source="ingredient.name")
-    unit = serializers.ReadOnlyField(
+    measurement_unit = serializers.ReadOnlyField(
         source="ingredient.unit")
 
     class Meta:
         model = RecipeIngredient
-        fields = ("id", "name", "unit", "amount")
+        fields = ("id", "name", "measurement_unit", "amount")
 
 
 class RecipeSerializer(serializers.ModelSerializer):
     is_favorited = serializers.SerializerMethodField()
-    is_in_basket = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
     tags = TagSerializer(read_only=True, many=True)
     author = UserSerializer(read_only=True)
     image = Base64ImageField()
@@ -233,7 +237,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             return False
         return Favorite.objects.filter(user=request.user, recipe=obj).exists()
 
-    def get_is_in_basket(self, obj):
+    def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
@@ -293,6 +297,25 @@ class RecipeSerializer(serializers.ModelSerializer):
             name = _name.split(":")[-1]
         return ContentFile(base64.b64decode(_img_str),
                            name='{}.{}'.format(name, ext))
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        instance.tags.clear()
+        instance.ingredients.clear()
+        self.create_recipe_ingredients(
+            self.validate_ingredients(self.initial_data.get('ingredients', instance.ingredients)), instance)
+        instance.name = validated_data.get('name', instance.name)
+        img = validated_data.get('image')
+        if not img:
+            img = instance.image
+        else:
+            img = self.base64_file(img)
+        instance.image = img
+        instance.text = validated_data.get('text', instance.text)
+        instance.tags.set(self.validate_tags(self.initial_data.get('tags', instance.tags)))
+        instance.cooking_time = validated_data.get('cooking_time', instance.cooking_time)
+        instance.save()
+        return instance
 
     @transaction.atomic
     def create(self, validated_data):
